@@ -1,6 +1,8 @@
 package com.example.whereami;
 
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Activity;
@@ -17,9 +19,19 @@ public class WhereAmI extends Activity {
 		
 		LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		
-		Location l = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		Criteria criteria = new Criteria();
+		criteria.setAccuracy(Criteria.ACCURACY_FINE);
+		criteria.setPowerRequirement(Criteria.POWER_LOW);
+		criteria.setAltitudeRequired(false);
+		criteria.setBearingRequired(false);
+		criteria.setSpeedRequired(false);
+		criteria.setCostAllowed(true);
+		String provider = locationManager.getBestProvider(criteria, true);
 		
+		Location l = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		updateWithNewLocation(l);
+		
+		locationManager.requestLocationUpdates(provider, 1000, 1, locationListener);
 	}
 	
 	private void updateWithNewLocation (Location location) {
@@ -43,4 +55,19 @@ public class WhereAmI extends Activity {
 		return true;
 	}
 
+	private final LocationListener locationListener = new LocationListener() {
+		@Override
+		public void onLocationChanged(Location location) {
+			updateWithNewLocation(location);
+		}
+		
+		@Override
+		public void onProviderDisabled(String provider) {}
+		
+		@Override
+		public void onProviderEnabled(String provider) {}
+		
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {}
+	};
 }
